@@ -64,7 +64,7 @@ svg.downArrow {
 }
 
 :host(collapsible-set) {
-	transition: height 10.6s;
+	transition: height 0.6s;
 	overflow: hidden;
 	position: relative;
 }
@@ -83,6 +83,7 @@ svg.downArrow {
 }
 
 :host(control-set, collapsible-set, radio-set) {
+	transition: height 1.6s;
 	/* width: fit-content; */
 	display: flex;
 	flex-direction: column;
