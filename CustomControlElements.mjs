@@ -15,8 +15,8 @@ function modifiedEvent(elem) { //Look into way to reduce the number of calls to 
 	elem.dispatchEvent(new CustomEvent('modification', {bubbles:true}))
 }
 
-fucntion instanceofControl(elem) { //'elem instanceof Control' would not work here unless somehow all custom elements could be registered before any are initalized. IDK if this is possible.
-	return elem.tagName.match(/-SET$|-CONTROl$/);
+function instanceofControl(elem) { //'elem instanceof Control' would not work here unless somehow all custom elements could be registered before any are initalized. IDK if this is possible.
+	return !!elem.tagName.match(/-SET$|-CONTROL$/);
 }
 
 
@@ -403,29 +403,29 @@ class radio_set extends control_set { //Each child control must be named.
 	constructor(params) { //{name, displayname, title, styles, noinherit, selected}
 		super(params);
 		const name = this.name || Math.random().toString(); //Unique name to tie radios together.
-		const radios = [];
-		for (var control of this.children) {
+		this.shadowRoot.append(document.createElement('slot'));
+		this.radios = [];
+		for (let control of this.children) {
 			if(!instanceofControl(control)) continue;
-			const label = radioTemplate.content.cloneNode(true);
+			const label = radioTemplate.content.cloneNode(true).firstElementChild;
 			const radio = label.firstElementChild;
-			radios.push[label];
-			label.childNodes[0].nodeValue = this.displayName;
-			radio.type = "radio"
+			this.radios.push(label);
+			label.childNodes[0].nodeValue = control.displayname;
 			radio.name = name;
 			radio.id = control.name;
-			if(control.name===init)
+			if(control.name===this.selected)
 				radio.checked = true;
 			else
-				control.elem.style.display = 'none';
+				control.style.display = 'none';
 			radio.addEventListener('input',()=>{
 				this.selected = control.name;
 			});
 		}
-		this.prepend(radios);
+		this.prepend(...this.radios);
 
 		new MutationObserver((Mut)=>{ //change radio name upon child control displayName changing.
 			if ([...this.children].includes(Mut.target) && Mut.type==="attributes" && instanceofControl(Mut.target) && Mut.attributeName ==="displayname")
-				radios.filter(r=>r.name===Mut.target.oldValue)[0].childNodes[0].nodeValue = Mut.target.displayname;
+				this.radios.filter(r=>r.name===Mut.target.oldValue)[0].childNodes[0].nodeValue = Mut.target.displayname;
 		}).observe(this, {attributes:true, childList:true});
 	}
 	static get observedAttributes() {
@@ -437,13 +437,20 @@ class radio_set extends control_set { //Each child control must be named.
 	set selected(val) {
 		this.setAttribute('selected', val);
 		for (var control of this.children) {
-			if (!instanceofControl(control)) return;
-			if(control.name===val)
+			if (!instanceofControl(control)) continue;
+			if(control.name === val)
 				control.style.display = '';
 			else
 				control.style.display = 'none';
 		}
 		modifiedEvent(this);
+		if (!this.radios) return;
+		for (var radio of this.radios) {
+			if (radio.id === val)
+				radio.checked = true;
+			else
+				radio.checked = false;
+		}
 	}
 }
 
@@ -454,7 +461,7 @@ class radio_set extends control_set { //Each child control must be named.
 //Register classes as custom elements, and export an optionally usable object with methods to create and populate these elements. 
 
 export default Object.fromEntries(
-	[radio_set,collapsible_set, control_set, button_control, colour_control, slider_control]
+	[collapsible_set, control_set, button_control, colour_control, slider_control, radio_set]
 		.map(Class=>{
 		const elemName = Class.name.replace('_', '-');
 		customElements.define(elemName, Class);

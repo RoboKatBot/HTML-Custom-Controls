@@ -28,3 +28,13 @@ Elements added:
 Yields:
 
 ![Preview](/CodePreview.png)
+
+
+
+The controls also combine into a singular object for querying values:
+
+```js
+var values = document.querySelector('*[name="Generation"]').value;
+values.Lifespan.lifeSpanMean  // = 1000
+values.spawnRate // = 4
+values.spawnRate = 2 //Sets the slider's value to 2.
