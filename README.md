@@ -27,4 +27,4 @@ Elements added:
 
 Yields:
 
-![Preview](https://lkao.hopto.org/CustomControlElements/CodePreview.png)
+![Preview](/CodePreview.png)
