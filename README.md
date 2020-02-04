@@ -16,7 +16,9 @@ Elements added:
 
 
 ```html
+<script type="module" src="/CustomControlElements.mjs"></script>
 <collapsible-set name="Generation">
+	<link slot="style" rel="stylesheet" href="HTML-Custom-Controls/CustomControlElements.css" type="text/css"> <!-- Optional styling -->
 		<collapsible-set name="Position">
 			<radio-set selected="Radial">
 				<control-set name="Cartesian">
