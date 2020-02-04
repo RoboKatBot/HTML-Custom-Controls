@@ -1,0 +1,94 @@
+:host(slider-control) {
+	position: relative;
+	margin: 2px 10px 2px 0px;
+}
+
+:host(slider-control) * {
+	display:inline-flex;
+	border:none;
+}
+:host(slider-control) label {
+	width:150px;
+	font-weight: bold;
+	font-size: 1.17em;
+}
+
+:host(slider-control) input[type="range"] {
+	-webkit-appearance: none;	/* Override default CSS styles */
+	width: auto;
+	height: 8px;
+	border-radius: 5px;
+	background: #d3d3d3;
+}
+
+:host(slider-control) input[type="range"]::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	width: 12px;
+	height: 16px;
+	border-radius: 50%;
+	background: #4e4e6e;
+}
+
+:host(slider-control) input[type="range"]:invalid::-webkit-slider-thumb {
+	background: #ae4e6e;
+}
+
+:host(slider-control) input[type="number"] {
+	width: 70px;
+	background-color:#4455bb44;
+	color: inherit;
+}
+
+:host(slider-control) input[type="number"]:invalid {
+	background-color:#aa222222;
+}
+
+:host(slider-control) .Tick {
+	width: 1px;
+	height: 8px;
+	top: 9px;
+	background-color:#000000;
+	position: absolute;
+}
+
+h3 {
+	margin: unset;
+}
+
+svg.downArrow {
+	width: 12px;
+	height: 6px;
+	left: 5px;
+	top: -1px;
+	position: relative;
+}
+
+:host(collapsible-set) {
+	transition: height 10.6s;
+	overflow: hidden;
+	position: relative;
+}
+
+:host(collapsible-set.hidden) {
+	padding-top: 0px;
+	padding-bottom: 0px;
+}
+
+:host(collapsible-set, radio-set) {
+	border-color: #1b252d;
+	border-width: 4px;
+	border-style: solid;
+	margin: 3px 3px 2px 0px;
+	padding: 0px 0px 4px 4px;
+}
+
+:host(control-set, collapsible-set, radio-set) {
+	/* width: fit-content; */
+	display: flex;
+	flex-direction: column;
+	width: fit-content;
+}
+
+style, link {
+	display: none !important;
+}
