@@ -15,6 +15,10 @@ function modifiedEvent(elem) { //Look into way to reduce the number of calls to 
 	elem.dispatchEvent(new CustomEvent('modification', {bubbles:true}))
 }
 
+fucntion instanceofControl(elem) { //'elem instanceof Control' would not work here unless somehow all custom elements could be registered before any are initalized. IDK if this is possible.
+	return elem.tagName.match(/-SET$|-CONTROl$/);
+}
+
 
 //Control is the base abstract class for all elements here.
 //name = internal name used for retrieving element values and such.
@@ -102,7 +106,7 @@ class Control extends HTMLElement {
 		}
 		return false;
 		function inheritableSlotStyles(elem) {
-			const parentSlotStyles = (elem.parentElement.tagName.match(/-SET$/) && !elem.noinherit) //'elem.parentElement instanceof Control' would not work here unless somehow all custom elements could be registered before any are initalized. IDK if this is possible.
+			const parentSlotStyles = (instanceofControl(elem.parentElement) && !elem.noinherit)
 				? inheritableSlotStyles(elem.parentElement)
 				: [];
 			return [...elem.children].filter(f=>f.slot==="style");
@@ -278,20 +282,20 @@ class control_set extends Control {
 		super(params, elems);
 		if (this.constructor.name==='control_set')
 			this.shadowRoot.append(document.createElement('slot'));
-		this.addEventListener('modification', this.resize);
+		this.addEventListener('modification', this.redraw.bind(this,0));
 	}
 	get styles() {return super.styles}
 	set styles(val) {
 		super.styles = val;
 		for (var control of this.children) {
-			if (control instanceof Control && !control.noinherit)
+			if (instanceofControl(control) && !control.noinherit)
 				control.styles = this.styles;
 		}
 	}
 	get value() {
 		const ret = {};
 		for (var control of this.children) {
-			if (!(control instanceof Control)) continue;
+			if (!instanceofControl(control)) continue;
 			const set = control instanceof control_set;
 			if (control.name) 
 				ret[control.name] = control;
@@ -316,17 +320,17 @@ class control_set extends Control {
 		return [...this.children].reduce((a,b)=>a+getHeight(b),0) +
 			[...this.shadowRoot.children].reduce((a,b)=>a+getHeight(b),0);
 	}
-	resize(toggle) {
+	resize() {
 		return this.style.height = CSS.px(this.height);
-		modifiedEvent(this.parentElement);
 	}
 	connectedCallback() {
 		if (!this.stylesWaiting) {
 			setTimeout(this.resize.bind(this));//Lazy fix - Gets called twice if there are styles to load.	
 		}
 	}
-	redraw() {
-		this.resize();
+	redraw(...args) {
+		this.resize(...args);
+		modifiedEvent(this.parentElement);
 	}
 }
 
@@ -353,7 +357,7 @@ class collapsible_set extends control_set {
 		if (this.classList.contains('hidden'))
 			this.hidden = 1;
 
-		button.addEventListener('click', this.resize.bind(this, 1));
+		button.addEventListener('click', this.redraw.bind(this, 1));
 	}
 	static get observedAttributes() {
 		return ['name', 'displayname', 'noinherit', 'hidden'];
@@ -401,7 +405,7 @@ class radio_set extends control_set { //Each child control must be named.
 		const name = this.name || Math.random().toString(); //Unique name to tie radios together.
 		const radios = [];
 		for (var control of this.children) {
-			if(!(control instanceof Control)) continue;
+			if(!instanceofControl(control)) continue;
 			const label = radioTemplate.content.cloneNode(true);
 			const radio = label.firstElementChild;
 			radios.push[label];
@@ -420,7 +424,7 @@ class radio_set extends control_set { //Each child control must be named.
 		this.prepend(radios);
 
 		new MutationObserver((Mut)=>{ //change radio name upon child control displayName changing.
-			if ([...this.children].includes(Mut.target) && Mut.type==="attributes" && Mut.target instanceof Control && Mut.attributeName ==="displayname")
+			if ([...this.children].includes(Mut.target) && Mut.type==="attributes" && instanceofControl(Mut.target) && Mut.attributeName ==="displayname")
 				radios.filter(r=>r.name===Mut.target.oldValue)[0].childNodes[0].nodeValue = Mut.target.displayname;
 		}).observe(this, {attributes:true, childList:true});
 	}
@@ -433,7 +437,7 @@ class radio_set extends control_set { //Each child control must be named.
 	set selected(val) {
 		this.setAttribute('selected', val);
 		for (var control of this.children) {
-			if (!(control instanceof Control)) return;
+			if (!instanceofControl(control)) return;
 			if(control.name===val)
 				control.style.display = '';
 			else
@@ -465,3 +469,7 @@ export default Object.fromEntries(
 		}]
 	})
 )
+
+//Export classes for extensibility 
+
+export const classes = {radio_set, collapsible_set, control_set, button_control, colour_control, slider_control, Control}
